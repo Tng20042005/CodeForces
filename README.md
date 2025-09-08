@@ -8,6 +8,7 @@
 
 ## Leaderboard
 <!-- LEADERBOARD:START -->
-| Rank | User | Total |
-|------|------|-------|
+| Rank | User | 900 | 1000 | 1200 | Total |
+|------|------|------|------|------|-------|
+| 1 | Tng20042005 | 0 | 24 | 5 | 29 |
 <!-- LEADERBOARD:END -->
