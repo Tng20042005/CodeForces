@@ -18,6 +18,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure README exists
+        run: |
+          if [ ! -f README.md ]; then
+            echo "# Project Title" > README.md
+          fi
+
       - name: Generate leaderboard
         run: |
           # Collect contributions: author,difficulty
@@ -27,10 +33,10 @@ jobs:
             echo "$author,$difficulty"
           done > contributions.csv
 
-          # Get all difficulties (numeric sort)
+          # Get all difficulties
           diffs=$(cut -d',' -f2 contributions.csv | sort -n -u)
 
-          # Table header
+          # Create markdown table header
           echo -n "| User " > leaderboard.md
           for d in $diffs; do
             echo -n "| $d " >> leaderboard.md
@@ -44,7 +50,7 @@ jobs:
           done
           echo "|-------|" >> leaderboard.md
 
-          # Build table rows
+          # Table rows
           for user in $(cut -d',' -f1 contributions.csv | sort -u); do
             line="| $user "
             total=0
@@ -59,8 +65,8 @@ jobs:
 
       - name: Insert leaderboard into README
         run: |
-          # Replace content between markers with leaderboard.md
-          awk '/<!-- LEADERBOARD:START -->/{flag=1;print;system("cat leaderboard.md");next}/<!-- LEADERBOARD:END -->/{flag=0} !flag' README.md > README_new.md
+          awk '/<!-- LEADERBOARD:START -->/{flag=1;print;system("cat leaderboard.md");next}
+/<!-- LEADERBOARD:END -->/{flag=0} !flag' README.md > README_new.md
           mv README_new.md README.md
 
       - name: Commit leaderboard
