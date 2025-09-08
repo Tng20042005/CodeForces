@@ -21,14 +21,17 @@ jobs:
       - name: Generate leaderboard
         run: |
           # Collect contributions: author,difficulty
-          git ls-files DailyCodeForces | grep -E '^[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
-            # Choose file creator (first committer)
-            author=$(git log --pretty=format:"%an" -- $file | tail -1)
+          git ls-files DailyCodeForces | grep -E '[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
+            author=$(git log --pretty=format:"%an" -- "$file" | tail -1)
             difficulty=$(echo "$file" | sed -E 's/.*_([0-9]+)\.py/\1/')
             echo "$author,$difficulty"
           done > contributions.csv
 
-          # Get all difficulties (numeric sort)
+          # Debug: show matched files
+          echo "Matched files:"
+          cat contributions.csv
+
+          # Get all difficulties sorted numerically
           diffs=$(cut -d',' -f2 contributions.csv | sort -n -u)
 
           # Table header
@@ -76,11 +79,16 @@ jobs:
 
       - name: Insert leaderboard into README
         run: |
-          # Make sure README has markers first:
-          # <!-- LEADERBOARD:START -->
-          # <!-- LEADERBOARD:END -->
-          awk '/<!-- LEADERBOARD:START -->/{flag=1;print;system("cat leaderboard.md");next}/<!-- LEADERBOARD:END -->/{flag=0} !flag' README.md > README_new.md
-          mv README_new.md README.md
+          # Chèn leaderboard.md vào README.md giữa 2 marker
+          sed -i '/<!-- LEADERBOARD:START -->/,/<!-- LEADERBOARD:END -->/{
+            /<!-- LEADERBOARD:START -->/{
+              p
+              r leaderboard.md
+              d
+            }
+            /<!-- LEADERBOARD:END -->/p
+            d
+          }' README.md
 
       - name: Commit leaderboard
         run: |
