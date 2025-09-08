@@ -1,0 +1,73 @@
+name: Update Leaderboard
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  leaderboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate leaderboard
+        run: |
+          USER="Tng20042005"
+
+          # Lấy tất cả file bài nộp
+          git ls-files | grep -E '^[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
+            difficulty=$(echo "$file" | sed -E 's/.*_([0-9]+)\.py/\1/')
+            echo "$USER,$difficulty"
+          done > contributions.csv
+
+          # Lấy tất cả difficulty, sắp xếp số
+          diffs=$(cut -d',' -f2 contributions.csv | sort -n -u)
+
+          # Tạo header bảng markdown
+          echo -n "| Rank | User " > leaderboard.md
+          for d in $diffs; do
+            echo -n "| $d " >> leaderboard.md
+          done
+          echo "| Total |" >> leaderboard.md
+
+          # Separator
+          echo -n "|------|------" >> leaderboard.md
+          for d in $diffs; do
+            echo -n "|------" >> leaderboard.md
+          done
+          echo "|-------|" >> leaderboard.md
+
+          # Tạo row cho user, tính total
+          total=0
+          row="$USER"
+          for d in $diffs; do
+            count=$(grep "^$USER,$d$" contributions.csv | wc -l)
+            row="$row| $count "
+            total=$((total + count))
+          done
+          echo "| 1 | $row| $total |" >> leaderboard.md
+
+      - name: Insert leaderboard into README
+        run: |
+          sed -i '/<!-- LEADERBOARD:START -->/,/<!-- LEADERBOARD:END -->/c\
+<!-- LEADERBOARD:START -->\
+'"$(cat leaderboard.md)"'\
+<!-- LEADERBOARD:END -->' README.md
+
+      - name: Commit leaderboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Update leaderboard [skip ci]" || echo "No changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
