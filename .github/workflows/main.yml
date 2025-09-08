@@ -21,7 +21,7 @@ jobs:
       - name: Generate leaderboard
         run: |
           # Collect contributions: author,difficulty from DailyCodeForces/
-          git ls-files DailyCodeForces | grep -E '[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
+          git ls-files CodeForces/DailyCodeForces | grep -E '[0-9]+[A-Z]_[0-9]+\.py$'| while read file; do
             author=$(git log --pretty=format:"%an" -- $file | tail -1)
             difficulty=$(echo "$file" | sed -E 's/.*_([0-9]+)\.py/\1/')
             echo "$author,$difficulty"
