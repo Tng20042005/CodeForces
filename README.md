@@ -8,8 +8,6 @@
 
 ## Leaderboard
 <!-- LEADERBOARD:START -->
-| Rank | User | 900 | 1000 | 1200 | Total |
-|------|------|------|------|------|-------|
-| 1 | Tng20042005 | 0 | 24 | 10 | 34 |
-| 2 | Huy1902 | 1 | 1 | 5 | 7 |
+| Rank | User | Total |
+|------|------|-------|
 <!-- LEADERBOARD:END -->
