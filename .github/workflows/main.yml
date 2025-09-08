@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write   # allow GitHub Action to push commits
 
 jobs:
   leaderboard:
@@ -16,52 +16,70 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # full git history
 
       - name: Generate leaderboard
         run: |
-          # Collect contributions: author,difficulty from DailyCodeForces/
-          git ls-files DailyCodeForces/ | grep -E '[0-9]+[A-Z]_[0-9]+\.py$'| while read file; do
+          # Collect contributions: author,difficulty
+          git ls-files DailyCodeForces/ | grep -E '^[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
+            # Choose file creator (first committer)
             author=$(git log --pretty=format:"%an" -- $file | tail -1)
             difficulty=$(echo "$file" | sed -E 's/.*_([0-9]+)\.py/\1/')
             echo "$author,$difficulty"
           done > contributions.csv
 
-          # Get all difficulties sorted numerically
+          # Get all difficulties (numeric sort)
           diffs=$(cut -d',' -f2 contributions.csv | sort -n -u)
 
-          # Create markdown table header
-          echo -n "| User " > leaderboard.md
+          # Table header
+          echo -n "| Rank | User " > leaderboard.md
           for d in $diffs; do
             echo -n "| $d " >> leaderboard.md
           done
           echo "| Total |" >> leaderboard.md
 
           # Separator
-          echo -n "|------" >> leaderboard.md
+          echo -n "|------|------" >> leaderboard.md
           for d in $diffs; do
             echo -n "|------" >> leaderboard.md
           done
           echo "|-------|" >> leaderboard.md
 
-          # Build table rows
+          # Build unsorted table as CSV: user,count_by_diff...,total
+          > table.csv
           for user in $(cut -d',' -f1 contributions.csv | sort -u); do
-            line="| $user "
+            line="$user"
             total=0
             for d in $diffs; do
               count=$(grep "^$user,$d$" contributions.csv | wc -l)
-              line="$line| $count "
+              line="$line,$count"
               total=$((total + count))
             done
-            line="$line| $total |"
-            echo "$line" >> leaderboard.md
+            line="$line,$total"
+            echo "$line" >> table.csv
           done
+
+          # Sort by total descending
+          sort -t',' -k$(( $(echo $diffs | wc -w) + 2 )) -nr table.csv > sorted.csv
+
+          # Render markdown rows with rank
+          rank=1
+          while IFS=, read -r user rest; do
+            echo -n "| $rank | $user " >> leaderboard.md
+            IFS=',' read -ra fields <<< "$rest"
+            for c in "${fields[@]}"; do
+              echo -n "| $c " >> leaderboard.md
+            done
+            echo "|" >> leaderboard.md
+            rank=$((rank+1))
+          done < sorted.csv
 
       - name: Insert leaderboard into README
         run: |
-          # Chèn leaderboard.md vào README.md giữa 2 marker
-          awk '/<!-- LEADERBOARD:START -->/{flag=1;print;system("cat leaderboard.md");next}
-/<!-- LEADERBOARD:END -->/{flag=0} !flag' README.md > README_new.md
+          # Make sure README has markers first:
+          # <!-- LEADERBOARD:START -->
+          # <!-- LEADERBOARD:END -->
+          awk '/<!-- LEADERBOARD:START -->/{flag=1;print;system("cat leaderboard.md");next}/<!-- LEADERBOARD:END -->/{flag=0} !flag' README.md > README_new.md
           mv README_new.md README.md
 
       - name: Commit leaderboard
