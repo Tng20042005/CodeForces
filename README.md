@@ -8,6 +8,8 @@ Aiming for 1100 in next competition.
 
 ## Leaderboard
 <!-- LEADERBOARD:START -->
+| Rank | User | Total |
+|------|------|-------|
 <!-- LEADERBOARD:END -->
 
 Các thông tin khác về repo...
