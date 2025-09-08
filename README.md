@@ -1,15 +1,14 @@
-# DailyCodeForces Leaderboard
+## This is our solution for Codeforce's problem
 
-Chào mừng đến với bảng xếp hạng.
+### Hopefully we will solve as much as we can in next 3 month
 
-## Goal
-Aiming for 1100 in next competition.  
+## Goal: Aiming for 1100 in next competition
+
 **Let's try our best**
 
 ## Leaderboard
 <!-- LEADERBOARD:START -->
-| Rank | User | Total |
-|------|------|-------|
+| Rank | User | 900 | 1000 | 1200 | Total |
+|------|------|------|------|------|-------|
+| 1 | Tng20042005 | 0 | 24 | 5 | 29 |
 <!-- LEADERBOARD:END -->
-
-Các thông tin khác về repo...
