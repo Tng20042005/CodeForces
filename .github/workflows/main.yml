@@ -22,8 +22,8 @@ jobs:
         run: |
           USER="Tng20042005"
 
-          # Lấy tất cả file bài nộp
-          git ls-files | grep -E '^[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
+          # Lấy tất cả file bài nộp trong DailyCodeForces
+          git ls-files DailyCodeForces | grep -E '[0-9]+[A-Z]_[0-9]+\.py$' | while read file; do
             difficulty=$(echo "$file" | sed -E 's/.*_([0-9]+)\.py/\1/')
             echo "$USER,$difficulty"
           done > contributions.csv
